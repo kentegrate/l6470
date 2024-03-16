@@ -21,44 +21,27 @@ if __name__ == '__main__':
 
         # parameter value setting
         device.setParam(l6470.MAX_SPEED, [0x00, 0x10])        
-        device.setParam(l6470.STEP_MODE, [0x03])
-        device.setParam(l6470.KVAL_HOLD, [0x39])
-        device.setParam(l6470.KVAL_RUN,  [0x39])
-        device.setParam(l6470.KVAL_ACC,  [0x39])
-        device.setParam(l6470.KVAL_DEC,  [0x39])
+        device.setParam(l6470.STEP_MODE, [0x02])
+        device.setParam(l6470.KVAL_HOLD, [0x00])
+        device.setParam(l6470.KVAL_RUN,  [0xF0])
+        device.setParam(l6470.KVAL_ACC,  [0x00])
+        device.setParam(l6470.KVAL_DEC,  [0x00])
 
         # exec "goTo" command
         device.goToDir(True, [0x00, 0x00, 0x00])
+        device.wait_until_not_busy()
 
-        for i in range(5):
 
-            time.sleep(1)
-
-            # get device status
-            status = device.updateStatus()
-            print("1")
 
         # exec "goTo" command
-        device.goToDir(True, [0x00, 0x03, 0xff])
+        device.goToDir(True, [0x00, 0x00, 0xff])
+        device.wait_until_not_busy()
 
-        for i in range(5):
-
-            time.sleep(1)
-
-            # get device status
-            status = device.updateStatus()
-            print("2")
 
         # exec "goTo" command
         device.goToDir(True, [0x00, 0x00, 0x00])
+        device.wait_until_not_busy()
 
-        for i in range(5):
-
-            time.sleep(1)
-
-            # get device status
-            status = device.updateStatus()
-            print("3")
 
     except Exception as e:
         t, v, tb = sys.exc_info()

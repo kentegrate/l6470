@@ -21,16 +21,16 @@ if __name__ == '__main__':
 
         # parameter value setting
         device.setParam(l6470.MAX_SPEED, [0x00, 0x10])        
-        device.setParam(l6470.STEP_MODE, [0x03])
-        device.setParam(l6470.KVAL_HOLD, [0x39])
-        device.setParam(l6470.KVAL_RUN,  [0x39])
-        device.setParam(l6470.KVAL_ACC,  [0x39])
-        device.setParam(l6470.KVAL_DEC,  [0x39])
+        device.setParam(l6470.STEP_MODE, [0x02])
+        device.setParam(l6470.KVAL_HOLD, [0x00])
+        device.setParam(l6470.KVAL_RUN,  [0xF0])
+        device.setParam(l6470.KVAL_ACC,  [0x00])
+        device.setParam(l6470.KVAL_DEC,  [0x00])
 
         # exec "run" command
-        device.move(True, [0x00, 0x3f, 0xff])
+        device.move(True, [0x00, 0x01, 0xff])
 
-        for i in range(5):
+        for i in range(1):
 
             time.sleep(1)
 

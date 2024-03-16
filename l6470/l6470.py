@@ -3,6 +3,7 @@
 
 # モジュールインポート
 import spidev
+import time 
 
 # L6470パラメータリスト
 class Param(object):
@@ -19,6 +20,8 @@ class Param(object):
         self.addr = _addr
         self.mask = _mask
         self.rw = _rw
+
+        
 
 ABS_POS     = Param(0x01, [0x3f, 0xff, 0xff], 1)
 EL_POS      = Param(0x02, [0x01, 0xff]      , 1)
@@ -99,7 +102,7 @@ class Device:
 
         # SPIデバイスの初期化
         self.spi = spidev.SpiDev(bus, client)
-        self.spi.max_speed_hz = 5000
+        self.spi.max_speed_hz = 500
         self.spi.mode = 0b11
         
         self.param = {
@@ -247,6 +250,16 @@ class Device:
 
         return self.command(reg, [0x00]*len(param.mask))
 
+    def get_pos(self):
+        res = self.getParam(ABS_POS)
+
+#        print(res)
+        val = res[0] * (256*256) + res[1] * 256 + res[2]
+        if val & (1<<21):
+            return val - 2**22
+        else:
+            return val
+
     def run(self, dir, speed):
         """RUNコマンドを実行する
         
@@ -375,6 +388,31 @@ class Device:
             abs_pos[i] = GO_TO.mask[i] & abs_pos[i]
 
         self.command(GO_TO.addr, abs_pos)
+
+
+    def dec_to_hex_22bit(self, value):
+        # Check if the value is within the range of 22-bit signed integers
+        if not (-2**21 <= value < 2**21):
+            raise ValueError("Value out of range for 22-bit signed integer")
+
+        # Convert negative values to their 2's complement representation
+        if value < 0:
+            value += 2**22
+        
+        # Format the value as a hexadecimal string with 6 characters (22 bits is represented by 6 hex digits)
+        hex_value = f'{value:06x}'
+
+        return hex_value
+
+
+    def abs_cmd(self, value):
+        hex = self.dec_to_hex_22bit(value)
+        cmd = [int(hex[0:2], 16), int(hex[2:4], 16), int(hex[4:6], 16)]
+        return cmd
+
+
+    def goToDec(self, dec_pos):
+        self.goTo(self.abs_cmd(dec_pos))
 
 
     def goToDir(self, dir, abs_pos):
@@ -577,6 +615,25 @@ class Device:
             from_recv += self.spi.xfer([value])
 
         return from_recv[1:]
+
+
+    def is_busy(self):
+        self.updateStatus()
+        print(self.status)
+        return self.status['BUSY'] == 0
+
+
+    def wait_until_not_busy(self):
+        while True:
+            time.sleep(0.2)
+            self.updateStatus()
+            print(self.status)
+            print(self.get_pos())
+            
+            if self.status['BUSY'] == 1:
+                print("L6470 NOT BUSY")
+                break    
+        time.sleep(0.2)
 
 
 if __name__ == '__main__':
